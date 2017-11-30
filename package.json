@@ -1,0 +1,28 @@
+{
+  "name": "name-that-playlist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelreske/name-that-playlist.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joelreske/name-that-playlist/issues"
+  },
+  "homepage": "https://github.com/joelreske/name-that-playlist#readme",
+  "dependencies": {
+    "animejs": "^2.2.0",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "nodemon": "^1.12.1",
+    "request": "^2.83.0"
+  }
+}
