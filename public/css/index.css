@@ -1,0 +1,43 @@
+@-webkit-keyframes glow {
+  0% {
+    background-position: 15%; }
+  50% {
+    background-position: 90%; }
+  100% {
+    background-position: 15%; } }
+
+body {
+  background-color: #fff;
+  min-height: 100vh;
+  background: #00B153;
+  /* For browsers that do not support gradients */
+  background: -webkit-radial-gradient(#00B153, white);
+  /* For Safari 5.1 to 6.0 */
+  background: -o-radial-gradient(#00B153, white);
+  /* For Opera 11.1 to 12.0 */
+  background: -moz-radial-gradient(#00B153, white);
+  /* For Firefox 3.6 to 15 */
+  background: radial-gradient(#00B153, white);
+  /* Standard syntax */
+  /*background: -webkit-linear-gradient(left ,#00B153 0%,#FFF 50%,#00B153 100%);*/
+  background-size: 300%;
+  -webkit-animation: glow 10s infinite ease;
+  display: grid;
+  grid-template-columns: 100px auto 100px;
+  grid-template-rows: 100px auto 100px;
+  grid-template-areas: ". . ." ". body ." ". . ."; }
+
+#login, #loggedin {
+  display: none; }
+
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 500px; }
+
+.container {
+  grid-area: body;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0px 5px 15px -5px black; }

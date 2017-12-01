@@ -144,5 +144,31 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
+var sass = require('node-sass');
+sass.render({
+  file: 'scss/index.scss',
+  importer: function(url, prev, done) {
+    someAsyncFunction(url, prev, function(result){
+      done({
+        file: result.path, // only one of them is required, see section Special Behaviours.
+        contents: result.data
+      });
+    });
+  },
+  // includePaths: [ 'lib/', 'mod/' ],
+  outputStyle: 'compressed',
+  outFile: 'public/css/index.css'
+}, function(error, result) { // node-style callback from v3.0.0 onwards
+  if (error) {
+    console.log(error.status); // used to be "code" in v2x and below
+    console.log(error.column);
+    console.log(error.message);
+    console.log(error.line);
+  }
+  else {
+    console.log(result.stats);
+  }
+});
+
 console.log('Listening on 8888');
 app.listen(8888);
