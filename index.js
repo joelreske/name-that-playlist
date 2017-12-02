@@ -146,7 +146,7 @@ app.get('/refresh_token', function(req, res) {
 
 var sass = require('node-sass');
 sass.render({
-  file: 'scss/index.scss',
+  file: 'sass/index.sass',
   importer: function(url, prev, done) {
     someAsyncFunction(url, prev, function(result){
       done({
