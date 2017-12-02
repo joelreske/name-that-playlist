@@ -19,13 +19,13 @@
   "homepage": "https://github.com/joelreske/name-that-playlist#readme",
   "dependencies": {
     "animejs": "^2.2.0",
+    "bluebird": "^3.5.1",
     "cookie-parser": "^1.4.3",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "nodemon": "^1.12.1",
-    "request": "^2.83.0"
-  },
-  "devDependencies": {
-    "node-sass": "^4.7.2"
+    "node-sass": "^4.7.2",
+    "request": "^2.83.0",
+    "spotify-web-api-node": "^2.5.0"
   }
 }

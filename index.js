@@ -18,6 +18,8 @@ var client_id = process.env.CLIENT_ID; // Your client id
 var client_secret = process.env.CLIENT_SECRET; // Your secret
 var redirect_uri = process.env.REDIRECT_URI; // Your redirect uri
 
+const Lyrics = require('./lyrics');
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -171,4 +173,8 @@ sass.render({
 });
 
 console.log('Listening on 8888');
+console.log(process.env);
+
+Lyrics.getLyrics("3n3Ppam7vgaVa1iaRUc9Lp");
+
 app.listen(8888);
