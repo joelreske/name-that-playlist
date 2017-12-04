@@ -167,6 +167,43 @@ const spotifyApi = new SpotifyWebApi({
     clientSecret: clientSecret
 });
 
+const Natural = require('natural');
+const Classifier = new Natural.BayesClassifier();
+const Tokenizer = new Natural.WordTokenizer();
+
+const trainingSet = [
+    {
+        tracks: ["4VqPOruhp5EdPBeR92t6lQ"],
+        sentiment: "angry"
+    },
+    {
+        tracks: ["6NPVjNh8Jhru9xOmyQigds"],
+        sentiment: "happy"
+    }
+];
+
+spotifyApi.clientCredentialsGrant()
+    .then(function (data) {
+        spotifyApi.setAccessToken(data.body['access_token']);
+    })
+    .then(() => {
+        return Promise.each(trainingSet, c => {
+            return Promise.each(c.tracks, t => {
+                return spotifyApi.getTrack(t).then(track => {
+                    console.log(track.body.name, track.body.artists[0].name, c.sentiment);
+                    return Lyrics.getLyrics(track.body.name, track.body.artists[0].name).then(lyrics => {
+                        console.log(Tokenizer.tokenize(lyrics).join(" "));
+                        return Classifier.addDocument(Tokenizer.tokenize(lyrics).join(" "), c.sentiment); 
+                    });
+                })
+            });
+        });
+    })
+    .then(() => {
+        Classifier.train();
+        console.log("classifier has been trained!");
+    });
+
 app.get('/playlistAnalysis', function (req, res, next) {
     /* First, get the playlist */
     const playlistId = req.query.playlistId;
@@ -180,10 +217,10 @@ app.get('/playlistAnalysis', function (req, res, next) {
             return spotifyApi.getPlaylistTracks(userId, playlistId);
         })
         .then(tracks => {
-            return Promise.map(tracks.body.items, item => Lyrics.getLyrics(item.track.name, item.track.artists[0].name).catch(err => ""));
+            return Promise.map(tracks.body.items, item => Lyrics.getLyrics(item.track.name, item.track.artists[0].name));
         })
         .then(lyrics => {
-            res.json(lyrics);
+            res.json(lyrics.map(l => Classifier.getClassifications(l)));
         })
         .catch(err => {
             console.error(err);
