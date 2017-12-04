@@ -23,6 +23,7 @@
     "cookie-parser": "^1.4.3",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
+    "natural": "^0.5.4",
     "nodemon": "^1.12.1",
     "node-sass": "^4.7.2",
     "request": "^2.83.0",

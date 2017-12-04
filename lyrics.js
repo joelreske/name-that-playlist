@@ -8,6 +8,10 @@ Promise.promisifyAll(request, {
 
 module.exports = {
     getLyrics: function (trackName, artistName) {
-        return request('https://api.lyrics.ovh/v1/' + artistName + '/' + trackName);
+        return request.getAsync('https://api.lyrics.ovh/v1/' + artistName + '/' + trackName).then(res => {
+            var [blah, body] = res;
+            body = JSON.parse(body);
+            return body.lyrics;
+        });
     }
 }
