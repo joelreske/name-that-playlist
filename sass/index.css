@@ -1,0 +1,60 @@
+@keyframes glow {
+  0% {
+    background-position: 15%; }
+  50% {
+    background-position: 90%; }
+  100% {
+    background-position: 15%; } }
+
+/* line 9, /Users/John/name-that-playlist/sass/index.sass */
+body {
+  background-color: #fff;
+  min-height: 100vh;
+  background: #00B153;
+  background: -webkit-radial-gradient(#00B153, white);
+  background: -o-radial-gradient(#00B153, white);
+  background: -moz-radial-gradient(#00B153, white);
+  background: radial-gradient(#00B153, white);
+  /*background: -webkit-linear-gradient(left ,#00B153 0%,#FFF 50%,#00B153 100%)*/
+  background-size: 300%;
+  -webkit-animation: glow 10s infinite ease;
+  display: grid;
+  grid-template-columns: 1fr min-content 1fr;
+  grid-template-rows: 1fr min-content 2fr;
+  grid-template-areas: ". . ." ". body ." ". . ."; }
+
+/* line 28, /Users/John/name-that-playlist/sass/index.sass */
+.container {
+  grid-area: body;
+  background-color: white;
+  min-width: 400px;
+  border-radius: 5px;
+  box-shadow: 0px 5px 15px -5px black;
+  text-align: center;
+  padding: 5px; }
+  /* line 37, /Users/John/name-that-playlist/sass/index.sass */
+  .container .playlist-item {
+    padding: 3px;
+    margin: 3px;
+    border-radius: 3px;
+    border: 1px solid black; }
+  /* line 43, /Users/John/name-that-playlist/sass/index.sass */
+  .container .selected {
+    color: white;
+    background-color: #00B153; }
+  /* line 48, /Users/John/name-that-playlist/sass/index.sass */
+  .container #profile-image img {
+    border-radius: 50%; }
+
+/* line 51, /Users/John/name-that-playlist/sass/index.sass */
+.btn {
+  background-color: #00B153;
+  border-radius: 4px;
+  padding: 5px;
+  display: inline-block; }
+  /* line 57, /Users/John/name-that-playlist/sass/index.sass */
+  .btn a {
+    color: white;
+    text-decoration: none; }
+
+/*# sourceMappingURL=index.css.map */

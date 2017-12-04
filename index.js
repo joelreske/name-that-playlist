@@ -192,9 +192,9 @@ spotifyApi.clientCredentialsGrant()
             return Promise.each(c.tracks, t => {
                 return spotifyApi.getTrack(t).then(track => {
                     console.log(track.body.name, track.body.artists[0].name, c.sentiment);
-                    return Lyrics.getLyrics(track.body.name, track.body.artists[0].name).then(lyrics => {
-                        console.log(Tokenizer.tokenize(lyrics).join(" "));
-                        return Classifier.addDocument(Tokenizer.tokenize(lyrics).join(" "), c.sentiment); 
+                    return Lyrics.getLyrics(track.body.name, track.body.artists[0].name).then(info => {
+                        console.log(Tokenizer.tokenize(info.lyrics).join(" "));
+                        return Classifier.addDocument(Tokenizer.tokenize(info.lyrics).join(" "), c.sentiment); 
                     });
                 })
             });
@@ -214,10 +214,17 @@ app.get('/playlistAnalysis', function (req, res, next) {
         spotifyApi.setAccessToken(token);
         spotifyApi.getPlaylistTracks(userId, playlistId)
         .then(tracks => {
-            return Promise.map(tracks.body.items, item => Lyrics.getLyrics(item.track.name, item.track.artists[0].name));
+            return Promise.map(tracks.body.items, item => {
+                return Lyrics.getLyrics(item.track.name, item.track.artists[0].name);
+            });
         })
-        .then(lyrics => {
-            res.json(lyrics.map(l => Classifier.getClassifications(l)));
+        .then(info => {
+            res.json(info.filter(l => l.lyrics != undefined).map(l => {
+                return {
+                    trackName: l.trackName,
+                    classifications: Classifier.getClassifications(l.lyrics)
+                };
+            }));
         })
         .catch(err => {
             console.error(err);

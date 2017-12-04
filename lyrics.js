@@ -11,7 +11,10 @@ module.exports = {
         return request.getAsync('https://api.lyrics.ovh/v1/' + artistName + '/' + trackName).then(res => {
             var [blah, body] = res;
             body = JSON.parse(body);
-            return body.lyrics;
-        });
+            return {
+                lyrics: body.lyrics,
+                trackName: trackName
+            };
+        }).catch(err => console.error(err));
     }
 }
