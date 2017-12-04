@@ -14,7 +14,7 @@
         <div id="body">
           <p>Nullam quis risus eget urna mollis ornare vel eu leo. Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
         </div>
-        <div id="loginButton">
+        <div id="loginButton" class="btn">
           <a href="/login">Log in with Spotify</a>
         </div>
       </div>
@@ -23,25 +23,64 @@
         </div>
         <div id="playlists">
         </div>
-        <a href="" id="obtain-new-token">Hello</a>
       </div>
+      <div id="results"></div>
     </div>
 
     <script id="user-profile-template" type="text/x-handlebars-template">
+      <div id="profile-image">
         <img width="150" src="{{images.0.url}}" />
-        {{display_name}}
+      </div>
+      <div id="profile-name">
+        <h1>{{display_name}}</h1>
       </div>
     </script>
 
     <script id="playlist-select-template" type="text/x-handlebars-template">
-        <img width="150" src="{{images.0.url}}" />
-        {{display_name}}
-      </div>
+        <h1>Select the playlist you would like to name:</h1>
+        {{#each items}}
+          <div class="playlist-item" meta-id="{{id}}" onClick="selectMe('{{id}}')">{{name}}</div>
+        {{/each}}
+        <div id="goButton" class="btn">
+          <button onClick="showResults()">Name That Playlist!</button>
+        </div>
     </script>
 
+    <script id="results-template" type="text/x-handlebars-template">
+      <h1>Results:</h1>
+    </script>
+
+    <!-- <script   src="https://code.jquery.com/jquery-3.2.1.slim.min.js"   integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="   crossorigin="anonymous"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
     <script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>
     <script>
+      var selectedid = "";
+      var access_token, refresh_token, error;
+      var userId;
+
+      function selectMe(id){
+        console.log(id);
+        selectedid = id;
+        $(".playlist-item").each(function(i){
+          if($( this ).attr('meta-id') == id){
+            $( this ).addClass('selected');
+          }else{
+            $( this ).removeClass('selected');
+          }
+        });
+      }
+
+      function showResults(){
+        var resultsSource = document.getElementById('results-template').innerHTML,
+            resultsTemplate = Handlebars.compile(resultsSource),
+            resultsPlaceholder = document.getElementById('results');
+
+        $.get( "/playlistAnalysis", { token: access_token, userId: userId, playlistId: selectedid } )
+          .done(function( data ) {
+            console.log(data);
+          });
+      }
+
       (function() {
         /**
          * Obtains parameters from the hash of the URL
@@ -64,14 +103,15 @@
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
         var params = getHashParams();
-        var access_token = params.access_token,
-            refresh_token = params.refresh_token,
-            error = params.error;
+        access_token = params.access_token;
+        refresh_token = params.refresh_token;
+        error = params.error;
+
         if (error) {
           alert('There was an error during the authentication');
         } else {
           if (access_token) {
-              console.log(access_token);
+            console.log(access_token);
             $.ajax({
                 url: 'https://api.spotify.com/v1/me',
                 headers: {
@@ -79,8 +119,11 @@
                 },
                 success: function(response) {
                   console.log(response);
-                  playlistSelectPlaceholder.innerHTML = playlistSelectTemplate(response);
+                  userId = response.id;
+                  userProfilePlaceholder.innerHTML = userProfileTemplate(response);
                   $('#login').hide();
+                  $('#results').hide();
+                  $('#playlistSelect').show();
                   $('#user-profile').show();
 
                   $.ajax({
@@ -90,7 +133,7 @@
                       },
                       success: function(response) {
                         console.log(response);
-                        userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+                        playlistSelectPlaceholder.innerHTML = playlistSelectTemplate(response);
                         $('#playlists').show();
                       }
                   });
@@ -100,17 +143,18 @@
               // render initial screen
               $('#login').show();
               $('#playlistSelect').hide();
+              $('#results').hide();
           }
-          document.getElementById('obtain-new-token').addEventListener('click', function() {
-            $.ajax({
-              url: '/refresh_token',
-              data: {
-                'refresh_token': refresh_token
-              }
-            }).done(function(data) {
-              access_token = data.access_token;
-            });
-          }, false);
+          // document.getElementById('obtain-new-token').addEventListener('click', function() {
+          //   $.ajax({
+          //     url: '/refresh_token',
+          //     data: {
+          //       'refresh_token': refresh_token
+          //     }
+          //   }).done(function(data) {
+          //     access_token = data.access_token;
+          //   });
+          // }, false);
         }
       })();
     </script>
