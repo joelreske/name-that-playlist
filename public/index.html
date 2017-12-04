@@ -71,6 +71,7 @@
           alert('There was an error during the authentication');
         } else {
           if (access_token) {
+              console.log(access_token);
             $.ajax({
                 url: 'https://api.spotify.com/v1/me',
                 headers: {

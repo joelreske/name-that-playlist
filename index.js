@@ -209,14 +209,10 @@ app.get('/playlistAnalysis', function (req, res, next) {
     /* First, get the playlist */
     const playlistId = req.query.playlistId;
     const userId = req.query.userId;
+    const token = req.query.token;
 
-    spotifyApi.clientCredentialsGrant()
-        .then(function (data) {
-            spotifyApi.setAccessToken(data.body['access_token']);
-        })
-        .then(() => {
-            return spotifyApi.getPlaylistTracks(userId, playlistId);
-        })
+        spotifyApi.setAccessToken(token);
+        spotifyApi.getPlaylistTracks(userId, playlistId)
         .then(tracks => {
             return Promise.map(tracks.body.items, item => Lyrics.getLyrics(item.track.name, item.track.artists[0].name));
         })
