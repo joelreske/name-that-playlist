@@ -31,7 +31,7 @@ module.exports = {
                 return request('https://api.lyrics.ovh/v1/' + primaryArtist + '/' + title);
             })
             .then((response, body) => {
-                console.log(response, body);
+                // console.log(response, body);
             })
             .catch(err => {
                 console.error("ERROR!", err);

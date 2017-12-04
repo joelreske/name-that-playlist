@@ -13,6 +13,7 @@ var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+var fs = require('fs');
 
 var client_id = process.env.CLIENT_ID; // Your client id
 var client_secret = process.env.CLIENT_SECRET; // Your secret
@@ -49,7 +50,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email playlist-read-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -103,7 +104,7 @@ app.get('/callback', function(req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
-          console.log(body);
+          // console.log(body);
         });
 
         // we can also pass the token to the browser to make requests from there
@@ -148,15 +149,8 @@ app.get('/refresh_token', function(req, res) {
 
 var sass = require('node-sass');
 sass.render({
+  indentedSyntax: true,
   file: 'sass/index.sass',
-  importer: function(url, prev, done) {
-    someAsyncFunction(url, prev, function(result){
-      done({
-        file: result.path, // only one of them is required, see section Special Behaviours.
-        contents: result.data
-      });
-    });
-  },
   // includePaths: [ 'lib/', 'mod/' ],
   outputStyle: 'compressed',
   outFile: 'public/css/index.css'
@@ -169,11 +163,18 @@ sass.render({
   }
   else {
     console.log(result.stats);
+
+    // No errors during the compilation, write this result on the disk
+    fs.writeFile('public/css/index.css', result.css, function(err){
+      if(!err){
+        //file written on disk
+      }
+    });
   }
 });
 
 console.log('Listening on 8888');
-console.log(process.env);
+// console.log(process.env);
 
 Lyrics.getLyrics("3n3Ppam7vgaVa1iaRUc9Lp");
 

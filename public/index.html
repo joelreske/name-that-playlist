@@ -16,13 +16,22 @@
         </div>
         <div id="loginButton">
           <a href="/login">Log in with Spotify</a>
-        <div>
+        </div>
       </div>
       <div id="playlistSelect">
         <div id="user-profile">
         </div>
+        <div id="playlists">
+        </div>
+        <a href="" id="obtain-new-token">Hello</a>
       </div>
     </div>
+
+    <script id="user-profile-template" type="text/x-handlebars-template">
+        <img width="150" src="{{images.0.url}}" />
+        {{display_name}}
+      </div>
+    </script>
 
     <script id="playlist-select-template" type="text/x-handlebars-template">
         <img width="150" src="{{images.0.url}}" />
@@ -50,7 +59,10 @@
 
         var playlistSelectSource = document.getElementById('playlist-select-template').innerHTML,
             playlistSelectTemplate = Handlebars.compile(playlistSelectSource),
-            playlistSelectPlaceholder = document.getElementById('user-profile');
+            playlistSelectPlaceholder = document.getElementById('playlists');
+        var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+            userProfileTemplate = Handlebars.compile(userProfileSource),
+            userProfilePlaceholder = document.getElementById('user-profile');
         var params = getHashParams();
         var access_token = params.access_token,
             refresh_token = params.refresh_token,
@@ -65,9 +77,22 @@
                   'Authorization': 'Bearer ' + access_token
                 },
                 success: function(response) {
+                  console.log(response);
                   playlistSelectPlaceholder.innerHTML = playlistSelectTemplate(response);
                   $('#login').hide();
-                  $('#playlistSelect').show();
+                  $('#user-profile').show();
+
+                  $.ajax({
+                      url: 'https://api.spotify.com/v1/me/playlists',
+                      headers: {
+                        'Authorization': 'Bearer ' + access_token
+                      },
+                      success: function(response) {
+                        console.log(response);
+                        userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+                        $('#playlists').show();
+                      }
+                  });
                 }
             });
           } else {
