@@ -222,6 +222,7 @@ spotifyApi.clientCredentialsGrant()
         }, 10000);
     });
 
+const MAX_SONGS_TO_ANALYZE = 15;
 app.get('/playlistAnalysis', function (req, res, next) {
     /* First, get the playlist */
     const playlistId = req.query.playlistId;
@@ -231,7 +232,7 @@ app.get('/playlistAnalysis', function (req, res, next) {
         spotifyApi.setAccessToken(token);
         spotifyApi.getPlaylistTracks(userId, playlistId)
         .then(tracks => {
-            return Promise.map(tracks.body.items, item => {
+            return Promise.map(tracks.body.items.slice(0, MAX_SONGS_TO_ANALYZE+1), item => {
                 return Lyrics.getLyrics(item.track.name, item.track.artists[0].name);
             });
         })
