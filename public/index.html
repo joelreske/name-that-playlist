@@ -106,7 +106,10 @@
             for (var i in data[0].classifications){
               classifications[data[0].classifications[i].label] = 0;
             }
+      
+            // for each song
             for (var i in data){
+              // sort the classifications by value - higher the better.  
               data[i].classifications.sort(function compare(a, b) {
                 if (a.value > b.value)
                   return -1;
@@ -114,12 +117,16 @@
                   return 1;
                 return 0;
               });
+
+              // add a score based on where in the list each label appears. The better, the lower the score.
               for (var j in data[i].classifications){
                 console.log(classifications[data[i].classifications[j].label]);
                 classifications[data[i].classifications[j].label] += parseInt(j);
               }
             }
-            var classificationsArr = [];
+
+            // Convert classifications into a sorted array (by score) for easy usage. The lower score the more common. 
+            var classificationsArr = []; // [{label: 'angry', value: 0}, {label: 'sad', value: 10}, etc...}]
             Object.keys(classifications).forEach(function(key,index) {
               classificationsArr.push({label: key, value: classifications[key]});
             });
@@ -130,6 +137,7 @@
                 return 1;
               return 0;
             });
+            
             // console.log(classificationsArr);
             resultsPlaceholder.innerHTML = resultsTemplate({songs: data, classification: classificationsArr});
           });
