@@ -49,18 +49,18 @@
     </script>
 
     <script id="results-template" type="text/x-handlebars-template">
-      <h1>Results:</h1>
-      <h1>{{classification.0.label}}</h1>
+      <h1>Results: {{classification.0.label}}</h1>
       {{#each songs}}
       <div class="result-item">
         <h3>{{trackName}}</h3>
         <ol>
           {{#each classifications}}
-            <li>{{label}} - {{value}}</li>
+            <li>{{label}} - {{percentage}}%</li>
           {{/each}}
         </ol>
       </div>
       {{/each}}
+      <button id="backButton" class="btn" onClick="showPlaylists()">Name Another Playlist</button>
     </script>
 
     <!-- <script   src="https://code.jquery.com/jquery-3.2.1.slim.min.js"   integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="   crossorigin="anonymous"></script> -->
@@ -82,6 +82,14 @@
           }
         });
       }
+
+    function showPlaylists() {
+        $('#results').hide();
+        $('#login').hide();
+        $('#results').hide();
+        $('#loading').hide();
+        $('#playlistSelect').show();
+    }
 
       function showResults(){
         var resultsSource = document.getElementById('results-template').innerHTML,
@@ -108,6 +116,7 @@
               $('#results').hide();
               alert("There are no songs in that playlist!");
             }else{
+                console.log(data);
               for (var i in data[0].classifications){
                 classifications[data[0].classifications[i].label] = 0;
               }

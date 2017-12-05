@@ -44,21 +44,21 @@ app.use(express.static(__dirname + '/public'))
     .use(cookieParser());
 // app.use(express.static(__dirname + '/node_modules/animejs/anime.min.js'));
 
-app.get('/login', function(req, res) {
+app.get('/login', function (req, res) {
 
-  var state = generateRandomString(16);
-  res.cookie(stateKey, state);
+    var state = generateRandomString(16);
+    res.cookie(stateKey, state);
 
-  // your application requests authorization
-  var scope = 'playlist-read-private user-read-private user-read-email';
-  res.redirect('https://accounts.spotify.com/authorize?' +
-    querystring.stringify({
-      response_type: 'code',
-      client_id: client_id,
-      scope: scope,
-      redirect_uri: redirect_uri,
-      state: state
-    }));
+    // your application requests authorization
+    var scope = 'playlist-read-private user-read-private user-read-email';
+    res.redirect('https://accounts.spotify.com/authorize?' +
+        querystring.stringify({
+            response_type: 'code',
+            client_id: client_id,
+            scope: scope,
+            redirect_uri: redirect_uri,
+            state: state
+        }));
 });
 
 app.get('/callback', function (req, res) {
@@ -174,20 +174,20 @@ const Tokenizer = new Natural.WordTokenizer();
 
 const trainingSet = [
     {
-      playlistId: "5XImMDY9wV8ouAeNWDlcbl",
-      sentiment: "sad"
+        playlistId: "5XImMDY9wV8ouAeNWDlcbl",
+        sentiment: "Sadness"
     },
     {
-      playlistId: "5B5W56ddH2PXRyao2yrKAD",
-      sentiment: "angry"
+        playlistId: "5B5W56ddH2PXRyao2yrKAD",
+        sentiment: "Anger"
     },
     {
-      playlistId: "2WXXDWbK3Bt5hrR5UnIeIA",
-      sentiment: "happy"
+        playlistId: "2WXXDWbK3Bt5hrR5UnIeIA",
+        sentiment: "Joy"
     },
     {
-      playlistId: "6901MeNMIJaAvBPuxOyXAx",
-      sentiment: "love"
+        playlistId: "6901MeNMIJaAvBPuxOyXAx",
+        sentiment: "Love"
     }
 ];
 
@@ -197,28 +197,28 @@ spotifyApi.clientCredentialsGrant()
     })
     .then(() => {
         return Promise.each(trainingSet, c => {
-          spotifyApi.getPlaylist('joelres', c.playlistId)
-          .then(function(data) {
-            return Promise.each(data.body.tracks.items, t => {
-              var track = t.track;
-              console.log(track.name, track.artists[0].name, c.sentiment); // print song and sentiment
-              return Lyrics.getLyrics(track.name, track.artists[0].name).then(info => {
-                  console.log("-------------");
-                  console.log("-------------");
-                  console.log("-------------");
-                  console.log(Tokenizer.tokenize(info.lyrics).join(" ")); // print lyrics
-                  return Classifier.addDocument(Tokenizer.tokenize(info.lyrics).join(" "), c.sentiment); 
-              });
-            });
-          }, function(err) {
-            console.log('Something went wrong!', err);
-          });
+            spotifyApi.getPlaylist('joelres', c.playlistId)
+                .then(function (data) {
+                    return Promise.each(data.body.tracks.items, t => {
+                        var track = t.track;
+                        console.log(track.name, track.artists[0].name, c.sentiment); // print song and sentiment
+                        return Lyrics.getLyrics(track.name, track.artists[0].name).then(info => {
+                            console.log("-------------");
+                            console.log("-------------");
+                            console.log("-------------");
+                            console.log(Tokenizer.tokenize(info.lyrics).join(" ")); // print lyrics
+                            return Classifier.addDocument(Tokenizer.tokenize(info.lyrics).join(" "), c.sentiment);
+                        });
+                    });
+                }, function (err) {
+                    console.log('Something went wrong!', err);
+                });
         });
     })
     .then(() => {
-        setTimeout(function(){
-          Classifier.train();
-          console.log("classifier has been trained!");
+        setTimeout(function () {
+            Classifier.train();
+            console.log("classifier has been trained!");
         }, 10000);
     });
 
@@ -229,18 +229,24 @@ app.get('/playlistAnalysis', function (req, res, next) {
     const userId = req.query.userId;
     const token = req.query.token;
 
-        spotifyApi.setAccessToken(token);
-        spotifyApi.getPlaylistTracks(userId, playlistId)
+    spotifyApi.setAccessToken(token);
+    spotifyApi.getPlaylistTracks(userId, playlistId)
         .then(tracks => {
-            return Promise.map(tracks.body.items.slice(0, MAX_SONGS_TO_ANALYZE+1), item => {
+            return Promise.map(tracks.body.items.slice(0, MAX_SONGS_TO_ANALYZE + 1), item => {
                 return Lyrics.getLyrics(item.track.name, item.track.artists[0].name);
             });
         })
         .then(info => {
             res.json(info.filter(l => l.lyrics != undefined).map(l => {
+                const cs = Classifier.getClassifications(l.lyrics);
+                const total = cs.reduce((total, c) => total + c.value, 0);
                 return {
                     trackName: l.trackName,
-                    classifications: Classifier.getClassifications(l.lyrics)
+                    classifications: Classifier.getClassifications(l.lyrics).map(c => ({
+                        label: c.label,
+                        value: c.value,
+                        percentage: (100 * (c.value / total)).toFixed(0)
+                    }))
                 };
             }));
         })
@@ -252,28 +258,27 @@ app.get('/playlistAnalysis', function (req, res, next) {
 
 var sass = require('node-sass');
 sass.render({
-  indentedSyntax: true,
-  file: 'sass/index.sass',
-  // includePaths: [ 'lib/', 'mod/' ],
-  outputStyle: 'compressed',
-  outFile: 'public/css/index.css'
-}, function(error, result) { // node-style callback from v3.0.0 onwards
-  if (error) {
-    console.log(error.status); // used to be "code" in v2x and below
-    console.log(error.column);
-    console.log(error.message);
-    console.log(error.line);
-  }
-  else {
-    console.log(result.stats);
+    indentedSyntax: true,
+    file: 'sass/index.sass',
+    // includePaths: [ 'lib/', 'mod/' ],
+    outputStyle: 'compressed',
+    outFile: 'public/css/index.css'
+}, function (error, result) { // node-style callback from v3.0.0 onwards
+    if (error) {
+        console.log(error.status); // used to be "code" in v2x and below
+        console.log(error.column);
+        console.log(error.message);
+        console.log(error.line);
+    } else {
+        console.log(result.stats);
 
-    // No errors during the compilation, write this result on the disk
-    fs.writeFile('public/css/index.css', result.css, function(err){
-      if(!err){
-        //file written on disk
-      }
-    });
-  }
+        // No errors during the compilation, write this result on the disk
+        fs.writeFile('public/css/index.css', result.css, function (err) {
+            if (!err) {
+                //file written on disk
+            }
+        });
+    }
 });
 
 console.log('Listening on 8888');
