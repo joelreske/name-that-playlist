@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Name That Playlist</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="/css/index.css">
   </head>
 
@@ -14,9 +15,7 @@
         <div id="body">
           <p>Nullam quis risus eget urna mollis ornare vel eu leo. Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
         </div>
-        <div id="loginButton" class="btn">
-          <a href="/login">Log in with Spotify</a>
-        </div>
+        <button id="loginButton" class="btn"><a href="/login">Log in with Spotify</a></button>
       </div>
       <div id="playlistSelect">
         <div id="user-profile">
@@ -24,6 +23,7 @@
         <div id="playlists">
         </div>
       </div>
+      <div id="loading"></div>
       <div id="results"></div>
     </div>
 
@@ -32,7 +32,7 @@
         <img width="150" src="{{images.0.url}}" />
       </div>
       <div id="profile-name">
-        <h1>{{display_name}}</h1>
+        <h2>{{display_name}},</h2>
       </div>
     </script>
 
@@ -41,13 +41,26 @@
         {{#each items}}
           <div class="playlist-item" meta-id="{{id}}" onClick="selectMe('{{id}}')">{{name}}</div>
         {{/each}}
-        <div id="goButton" class="btn">
-          <button onClick="showResults()">Name That Playlist!</button>
-        </div>
+        <button id="goButton" class="btn" onClick="showResults()">Name That Playlist!</button>
+    </script>
+
+    <script id="loading-template" type="text/x-handlebars-template">
+      <h1>Loading..</h1>
     </script>
 
     <script id="results-template" type="text/x-handlebars-template">
       <h1>Results:</h1>
+      <h1>{{classification.0.label}}</h1>
+      {{#each songs}}
+      <div class="result-item">
+        <h3>{{trackName}}</h3>
+        <ol>
+          {{#each classifications}}
+            <li>{{label}}</li>
+          {{/each}}
+        </ol>
+      </div>
+      {{/each}}
     </script>
 
     <!-- <script   src="https://code.jquery.com/jquery-3.2.1.slim.min.js"   integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="   crossorigin="anonymous"></script> -->
@@ -74,10 +87,51 @@
         var resultsSource = document.getElementById('results-template').innerHTML,
             resultsTemplate = Handlebars.compile(resultsSource),
             resultsPlaceholder = document.getElementById('results');
+        var loadingSource = document.getElementById('loading-template').innerHTML,
+            loadingTemplate = Handlebars.compile(loadingSource),
+            loadingPlaceholder = document.getElementById('loading');
+
+        loadingPlaceholder.innerHTML = loadingTemplate();
+        $('#login').hide();
+        $('#results').hide();
+        $('#playlistSelect').hide();
+        $('#loading').show();
 
         $.get( "/playlistAnalysis", { token: access_token, userId: userId, playlistId: selectedid } )
           .done(function( data ) {
-            console.log(data);
+            $('#results').show();
+            $('#loading').hide();
+            // console.log(data);
+            classifications = {} // {angry: 0, sad: 0, etc...}
+            for (var i in data[0].classifications){
+              classifications[data[0].classifications[i].label] = 0;
+            }
+            for (var i in data){
+              data[i].classifications.sort(function compare(a, b) {
+                if (a.value > b.value)
+                  return -1;
+                if (a.value < b.value)
+                  return 1;
+                return 0;
+              });
+              for (var j in data[i].classifications){
+                console.log(classifications[data[i].classifications[j].label]);
+                classifications[data[i].classifications[j].label] += parseInt(j);
+              }
+            }
+            var classificationsArr = [];
+            Object.keys(classifications).forEach(function(key,index) {
+              classificationsArr.push({label: key, value: classifications[key]});
+            });
+            classificationsArr.sort(function compare(a, b) {
+              if (a.value < b.value)
+                return -1;
+              if (a.value > b.value)
+                return 1;
+              return 0;
+            });
+            // console.log(classificationsArr);
+            resultsPlaceholder.innerHTML = resultsTemplate({songs: data, classification: classificationsArr});
           });
       }
 

@@ -174,12 +174,20 @@ const Tokenizer = new Natural.WordTokenizer();
 
 const trainingSet = [
     {
-        tracks: ["4VqPOruhp5EdPBeR92t6lQ"],
-        sentiment: "angry"
+      playlistId: "5XImMDY9wV8ouAeNWDlcbl",
+      sentiment: "sad"
     },
     {
-        tracks: ["6NPVjNh8Jhru9xOmyQigds"],
-        sentiment: "happy"
+      playlistId: "5B5W56ddH2PXRyao2yrKAD",
+      sentiment: "angry"
+    },
+    {
+      playlistId: "2WXXDWbK3Bt5hrR5UnIeIA",
+      sentiment: "happy"
+    },
+    {
+      playlistId: "6901MeNMIJaAvBPuxOyXAx",
+      sentiment: "love"
     }
 ];
 
@@ -189,20 +197,29 @@ spotifyApi.clientCredentialsGrant()
     })
     .then(() => {
         return Promise.each(trainingSet, c => {
-            return Promise.each(c.tracks, t => {
-                return spotifyApi.getTrack(t).then(track => {
-                    console.log(track.body.name, track.body.artists[0].name, c.sentiment);
-                    return Lyrics.getLyrics(track.body.name, track.body.artists[0].name).then(info => {
-                        console.log(Tokenizer.tokenize(info.lyrics).join(" "));
-                        return Classifier.addDocument(Tokenizer.tokenize(info.lyrics).join(" "), c.sentiment); 
-                    });
-                })
+          spotifyApi.getPlaylist('joelres', c.playlistId)
+          .then(function(data) {
+            return Promise.each(data.body.tracks.items, t => {
+              var track = t.track;
+              console.log(track.name, track.artists[0].name, c.sentiment); // print song and sentiment
+              return Lyrics.getLyrics(track.name, track.artists[0].name).then(info => {
+                  console.log("-------------");
+                  console.log("-------------");
+                  console.log("-------------");
+                  console.log(Tokenizer.tokenize(info.lyrics).join(" ")); // print lyrics
+                  return Classifier.addDocument(Tokenizer.tokenize(info.lyrics).join(" "), c.sentiment); 
+              });
             });
+          }, function(err) {
+            console.log('Something went wrong!', err);
+          });
         });
     })
     .then(() => {
-        Classifier.train();
-        console.log("classifier has been trained!");
+        setTimeout(function(){
+          Classifier.train();
+          console.log("classifier has been trained!");
+        }, 10000);
     });
 
 app.get('/playlistAnalysis', function (req, res, next) {

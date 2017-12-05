@@ -25,6 +25,8 @@ body
   grid-template-rows: 1fr min-content 2fr
   grid-template-areas: ". . ." ". body ." ". . ."
 
+  font-family: 'Roboto', sans-serif
+
 .container
   grid-area: body
   background-color: white
@@ -32,7 +34,7 @@ body
   border-radius: 5px
   box-shadow: 0px 5px 15px -5px black
   text-align: center
-  padding: 5px
+  padding: 15px
 
   .playlist-item
     padding: 3px
@@ -48,11 +50,18 @@ body
     img
       border-radius: 50%
 
+  #profile-name
+    h2
+      color: grey
+
 .btn
   background-color: #00B153
-  border-radius: 4px
-  padding: 5px
+  border-radius: 20px
+  padding: 14px
   display: inline-block
+  color: white
+  border: none
+  font-size: 20px
 
   a
     color: white
