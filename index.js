@@ -287,4 +287,4 @@ console.log('Listening on 8888');
 
 //Lyrics.getLyrics("3n3Ppam7vgaVa1iaRUc9Lp");
 
-app.listen(8888);
+app.listen(process.env.PORT || 8888);
