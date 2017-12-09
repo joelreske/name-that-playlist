@@ -42,7 +42,7 @@
     <script id="playlist-select-template" type="text/x-handlebars-template">
         <h1>Select the playlist you would like to name:</h1>
         {{#each items}}
-          <div class="playlist-item" meta-id="{{id}}" onClick="selectMe('{{id}}')">{{name}}</div>
+          <div class="playlist-item" meta-id="{{id}}" meta-owner="{{owner.id}}" onClick="selectMe('{{id}}', '{{owner.id}}')">{{name}}</div>
         {{/each}}
         <button id="goButton" class="btn" onClick="showResults()">Name That Playlist!</button>
     </script>
@@ -52,17 +52,22 @@
     </script>
 
     <script id="results-template" type="text/x-handlebars-template">
-      <h1>Results: {{classification.0.label}}</h1>
-      {{#each songs}}
-      <div class="result-item">
-        <h3>{{trackName}}</h3>
-        <ol>
-          {{#each classifications}}
-            <li>{{label}} - {{percentage}}%</li>
-          {{/each}}
-        </ol>
-      </div>
-      {{/each}}
+      {{#if songs}}
+        <h1>Results: {{classification.0.label}}</h1>
+        {{#each songs}}
+        <div class="result-item" style="display:none;">
+          <h3>{{trackName}}</h3>
+          <ol>
+            {{#each classifications}}
+              <li>{{label}} - {{percentage}}%</li>
+            {{/each}}
+          </ol>
+        </div>
+        {{/each}}
+      {{else}}
+        <h1>Sorry, we couldn't get lyrics to any of those songs :/</h1>
+      {{/if}}
+      
       <button id="backButton" class="btn" onClick="showPlaylists()">Name Another Playlist</button>
     </script>
 
@@ -74,10 +79,12 @@
       var selectedid = "";
       var access_token, refresh_token, error;
       var userId;
+      var sel_owner;
 
-      function selectMe(id){
+      function selectMe(id, owner){
         // console.log(id);
         selectedid = id;
+        sel_owner = owner;
         $(".playlist-item").each(function(i){
           if($( this ).attr('meta-id') == id){
             $( this ).addClass('selected');
@@ -109,7 +116,7 @@
         $('#playlistSelect').hide();
         $('#loading').show();
 
-        $.get( "/playlistAnalysis", { token: access_token, userId: userId, playlistId: selectedid } )
+        $.get( "/playlistAnalysis", { token: access_token, userId: sel_owner, playlistId: selectedid } )
           .done(function( data ) {
             $('#results').show();
             $('#loading').hide();
@@ -118,7 +125,7 @@
             if (!data[0]){
               $('#playlistSelect').show();
               $('#results').hide();
-              alert("There are no songs in that playlist!");
+              alert("There are no songs in that playlist! (Or at least we couldn't find any lyrics.)");
             }else{
                 console.log(data);
               for (var i in data[0].classifications){
@@ -161,7 +168,7 @@
 
               var dataToChart = []
               for (var i in data){
-                var item = {x:0, y:0, yLabel: data[i].trackName} // {x: 5, y: 10}
+                var item = {x:0, y:0, myLabel: data[i].trackName} // {x: 5, y: 10}
                 for (j in data[i].classifications){
                   if (data[i].classifications[j].label == firstAxis){
                     item.x = data[i].classifications[j].percentage
@@ -178,20 +185,39 @@
                 type: 'scatter',
                 data: {
                     datasets: [{
-                        label: 'Scatter Dataset',
+                        label: 'Results',
                         data: dataToChart
                     }]
                 },
                 options: {
+                  elements: {
+                      line: {
+                          backgroundColor: 'rgba(0, 0, 0 ,0)',
+                          borderWidth: 0,
+                          borderColor: 'rgba(0, 0, 0, 0)',
+                          fill: false,
+                      },
+                      point: {
+                        backgroundColor: 'rgba(0,0,0,1)'
+                      }
+                  },
                   showLine: false,
                   scales: {
                       yAxes: [{
+                          scaleLabel: {
+                            display: true,
+                            labelString: secondAxis
+                          },
                           ticks: {
                               min: 0,
                               max: 100
                           }
                       }],
                       xAxes: [{
+                          scaleLabel: {
+                              display: true,
+                              labelString: firstAxis
+                          },
                           ticks: {
                               min: 0,
                               max: 100
@@ -201,9 +227,10 @@
                   tooltips: {
                       callbacks: {
                         label: function(tooltipItem, data) {
-                          var value = data.datasets[tooltipItem.datasetIndex].data[0];
-                          var label = data.datasets[tooltipItem.datasetIndex].label;
-                          return label + ' ' + value + '%';
+                          var x = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].x;
+                          var y = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].y;
+                          var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].myLabel;
+                          return [label , x + '%' + firstAxis , y + '%' + secondAxis];
                         }
                       }
                   }

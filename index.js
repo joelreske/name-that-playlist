@@ -152,12 +152,13 @@ app.get('/refresh_token', function (req, res) {
 });
 
 const Promise = require('bluebird');
-var request = Promise.promisify(require("request"), {
-    multiArgs: true
-});
-Promise.promisifyAll(request, {
-    multiArgs: true
-});
+var rp = require('request-promise');
+// var request = Promise.promisify(require("request"), {
+//     multiArgs: true
+// });
+// Promise.promisifyAll(request, {
+//     multiArgs: true
+// });
 const SpotifyWebApi = require('spotify-web-api-node');
 const clientId = process.env.CLIENT_ID,
     clientSecret = process.env.CLIENT_SECRET;
@@ -222,7 +223,7 @@ spotifyApi.clientCredentialsGrant()
         }, 10000);
     });
 
-const MAX_SONGS_TO_ANALYZE = 5;
+const MAX_SONGS_TO_ANALYZE = 15;
 app.get('/playlistAnalysis', function (req, res, next) {
     /* First, get the playlist */
     const playlistId = req.query.playlistId;
@@ -239,7 +240,7 @@ app.get('/playlistAnalysis', function (req, res, next) {
             });
         })
         .then(info => {
-            res.json(info.filter(l => l.lyrics != undefined).map(l => {
+            res.json(info.filter(l => l != undefined && l.lyrics != undefined).map(l => {
                 const cs = Classifier.getClassifications(l.lyrics);
                 const total = cs.reduce((total, c) => total + c.value, 0);
                 return {
@@ -253,7 +254,7 @@ app.get('/playlistAnalysis', function (req, res, next) {
             }));
         })
         .catch(err => {
-            console.error(err);
+            console.error("Hello", err);
             res.sendStatus(500);
         });
 });
