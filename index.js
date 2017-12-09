@@ -222,12 +222,14 @@ spotifyApi.clientCredentialsGrant()
         }, 10000);
     });
 
-const MAX_SONGS_TO_ANALYZE = 15;
+const MAX_SONGS_TO_ANALYZE = 5;
 app.get('/playlistAnalysis', function (req, res, next) {
     /* First, get the playlist */
     const playlistId = req.query.playlistId;
     const userId = req.query.userId;
     const token = req.query.token;
+
+    console.log(userId, token);
 
     spotifyApi.setAccessToken(token);
     spotifyApi.getPlaylistTracks(userId, playlistId)
