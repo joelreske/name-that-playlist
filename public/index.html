@@ -25,7 +25,8 @@
       </div>
       <div id="loading"></div>
       <div id="results">
-          <canvas id="myChart" width="400" height="400"></canvas>
+          <div id="chart-container"><canvas id="myChart" width="400" height="400"></canvas></div>
+          
           <div id="results-placeholder"></div>
       </div>
     </div>
@@ -180,6 +181,9 @@
                 dataToChart.push(item);
               }
 
+              $('#chart-container').empty();
+              $('#chart-container').html('<canvas id="myChart" width="400" height="400"></canvas>');
+
               var ctx = $("#myChart");
               var chart = new Chart(ctx, {
                 type: 'scatter',
@@ -190,6 +194,8 @@
                     }]
                 },
                 options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
                   elements: {
                       line: {
                           backgroundColor: 'rgba(0, 0, 0 ,0)',
