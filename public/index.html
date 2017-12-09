@@ -24,7 +24,10 @@
         </div>
       </div>
       <div id="loading"></div>
-      <div id="results"></div>
+      <div id="results">
+          <canvas id="myChart" width="400" height="400"></canvas>
+          <div id="results-placeholder"></div>
+      </div>
     </div>
 
     <script id="user-profile-template" type="text/x-handlebars-template">
@@ -66,6 +69,7 @@
     <!-- <script   src="https://code.jquery.com/jquery-3.2.1.slim.min.js"   integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="   crossorigin="anonymous"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
     <script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
     <script>
       var selectedid = "";
       var access_token, refresh_token, error;
@@ -94,7 +98,7 @@
       function showResults(){
         var resultsSource = document.getElementById('results-template').innerHTML,
             resultsTemplate = Handlebars.compile(resultsSource),
-            resultsPlaceholder = document.getElementById('results');
+            resultsPlaceholder = document.getElementById('results-placeholder');
         var loadingSource = document.getElementById('loading-template').innerHTML,
             loadingTemplate = Handlebars.compile(loadingSource),
             loadingPlaceholder = document.getElementById('loading');
@@ -152,6 +156,58 @@
               });
 
               console.log(classificationsArr);
+              var firstAxis = classificationsArr[0].label;
+              var secondAxis = classificationsArr[1].label;
+
+              var dataToChart = []
+              for (var i in data){
+                var item = {x:0, y:0, yLabel: data[i].trackName} // {x: 5, y: 10}
+                for (j in data[i].classifications){
+                  if (data[i].classifications[j].label == firstAxis){
+                    item.x = data[i].classifications[j].percentage
+                  }
+                  if (data[i].classifications[j].label == secondAxis){
+                    item.y = data[i].classifications[j].percentage
+                  }
+                }
+                dataToChart.push(item);
+              }
+
+              var ctx = $("#myChart");
+              var chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Scatter Dataset',
+                        data: dataToChart
+                    }]
+                },
+                options: {
+                  showLine: false,
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              min: 0,
+                              max: 100
+                          }
+                      }],
+                      xAxes: [{
+                          ticks: {
+                              min: 0,
+                              max: 100
+                          }
+                      }]
+                  },
+                  tooltips: {
+                      callbacks: {
+                          label: function(tooltipItem, data) {
+                              return tooltipItem.yLabel;
+                          }
+                      }
+                  }
+                }
+              });
+              
               resultsPlaceholder.innerHTML = resultsTemplate({songs: data, classification: classificationsArr});
             }
           });
